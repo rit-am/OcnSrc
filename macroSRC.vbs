@@ -33,7 +33,7 @@ Sub HelloWorld()
     Dim SRecordDefn(17, 300) As String, HeaderDefn(300, 17) As String
     Dim Counter As Integer
     Dim TotalRecords As Integer
-    Dim valIntOne As Integer
+    Dim valIntOne As Integer, IntValThree As Integer
     Dim vRecType As String, vFieldName As String, _
         vMOC As String, vPosition As String, _
         vLength As String, vDataType As String, _
@@ -49,14 +49,15 @@ Sub HelloWorld()
     Flag_TR = False
     Flag_HDTR = False
     valIntOne = 1
+    IntValThree = 3
     IntValCountOfRecordtypes = 16 'Types of record in SRC file other than HD & TR
     ReDim RecTypeTable(16)
     'SWorkSheetdefOP = ThisWorkbook.Worksheets("def_OP")
 '--------------------------------------------------------------------------------------------------------
     'REM - Create Required Sheets
     CreateSheet "RecordDefinations"
-    CreateSheet "DataSet"
     CreateSheet "AscArray"
+    CreateSheet "DataSet"
 '--------------------------------------------------------------------------------------------------------
     'REM - Open And Read and File
     Open myFile For Input As #1
@@ -73,8 +74,8 @@ Sub HelloWorld()
     'REM - Analyze File Data
     'REM - Analyse Headers
     For i = LBound(arr) To UBound(arr)
-        Txt = Mid(arr(i), valIntOne, 3)
-        If Len(Txt) >= 3 Then
+        Txt = Mid(arr(i), valIntOne, IntValThree)
+        If Len(Txt) >= IntValThree Then
             If Trim(Txt) = "HD" Then
                 Flag_HD = True
                 Count_HD = Count_HD + valIntOne
@@ -104,7 +105,7 @@ Sub HelloWorld()
             Txt = Txt & "Header Found POS : " & POS_HD & vbCrLf
             Txt = Txt & "Trailer Found Flag : " & Flag_TR & vbCrLf
             Txt = Txt & "Trailer Found Count : " & Count_TR & vbCrLf
-            Txt = Txt & "Header Found POS : " & POS_TR & vbCrLf
+            Txt = Txt & "Trailer Found POS : " & POS_TR & vbCrLf
             MsgBox (Txt)
     End If
 '--------------------------------------------------------------------------------------------------------
@@ -123,10 +124,10 @@ Sub HelloWorld()
     Txt = ""
     For i = LBound(arr) To UBound(arr)
         For j = (LBound(arr) + valIntOne) To UBound(arr)
-            If (Len(arr(i)) >= 3) And (Len(arr(j)) >= 3) Then
-                If (Trim(Mid(arr(i), valIntOne, 3)) <> "HD") And (Trim(Mid(arr(i), valIntOne, 3)) <> "TR") _
-                    And (Trim(Mid(arr(j), valIntOne, 3)) <> "HD") And (Trim(Mid(arr(j), valIntOne, 3)) <> "TR") Then
-                    If Int(Mid(arr(i), valIntOne, 3)) < Int(Mid(arr(j), valIntOne, 3)) Then
+            If (Len(arr(i)) >= IntValThree) And (Len(arr(j)) >= IntValThree) Then
+                If (Trim(Mid(arr(i), valIntOne, IntValThree)) <> "HD") And (Trim(Mid(arr(i), valIntOne, IntValThree)) <> "TR") _
+                    And (Trim(Mid(arr(j), valIntOne, IntValThree)) <> "HD") And (Trim(Mid(arr(j), valIntOne, IntValThree)) <> "TR") Then
+                    If Int(Mid(arr(i), valIntOne, IntValThree)) < Int(Mid(arr(j), valIntOne, IntValThree)) Then
                         Txt = arr(i)
                         arr(i) = arr(j)
                         arr(j) = Txt
@@ -201,7 +202,7 @@ Sub HelloWorld()
             HeaderDefn(IntRow, j) = Worksheets("RecordDefinations").Cells(Counter, j)
         Next j
         Txt = ""
-        For i = 3 To 3
+        For i = IntValThree To IntValThree
             'Txt = Txt & HeaderDefn(0, i) & " :: " & HeaderDefn(IntRow, i) & vbCrLf
             Txt = Txt & HeaderDefn(IntRow, i) & vbCrLf
         Next i
@@ -210,6 +211,54 @@ Sub HelloWorld()
     Next Counter
 '--------------------------------------------------------------------------------------------------------
     'REM - Update Data from AscArray to DataSet
+    
+    Dim Data_Type As String, Header_Type As String
+    
+    
+    For i = 1 To Worksheets("AscArray").Cells(Rows.Count, valIntOne).End(xlUp).Row
+        For j = 1 To Worksheets("DataSet").Cells(Rows.Count, valIntOne).End(xlUp).Row
+        
+        If (Len(Worksheets("AscArray").Cells(i, 2)) > 3 And Len(Worksheets("DataSet").Cells(i, 2)) > 3) Then
+        
+            Data_Type = Mid(Worksheets("AscArray").Cells(i, 2), 1, 3)
+            If Worksheets("DataSet").Cells(j, 2) = "D" Then
+                x = 1
+            Else
+                x = 2
+            End If
+            Header_Type = Mid(Worksheets("DataSet").Cells(j, 2), x, 3)
+            
+            If Trim(Data_Type) <> "HD" And _
+                Trim(Data_Type) <> "TR" And _
+                Trim(Header_Type) <> "HD" And _
+                Trim(Header_Type) <> "TR" And _
+                Trim(Header_Type) <> "" Then
+                
+                    If (Int(Data_Type) = Int(Header_Type)) Then
+                    
+                    'Insert Row Above Row 3
+                    Worksheets("DataSet").Rows(j + 1).Insert Shift:=xlUp, _
+                            CopyOrigin:=xlFormatFromLeftOrAbove 'xlFormatFromLeftOrAbove 'or xlFormatFromRightOrBelow
+                    Worksheets("DataSet").Cells(j + 1, valIntOne) = "D"
+                    Worksheets("DataSet").Cells(j + 1, 2) = Worksheets("AscArray").Cells(i, 2)
+                
+                    End If
+                
+                
+            End If
+        
+        End If
+        
+        
+
+        
+        
+        
+        
+        Next j
+    Next i
+    
+    
     
     
 
